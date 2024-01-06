@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JESUS HOUSE TORRY CHOIR</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      padding: 50px;
+    }
+
+    section {
+      padding: 50px;
+    }
+
+    button {
+      background-color: blue;
+      color: white;
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      padding: 20px;
+    }
+
+    .song {
+      width: 100%;
+      margin: 10px;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 10px;
+    }
+
+    .editable {
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .editable:hover {
+      border: 2px solid white;
+    }
+
+    textarea,
+    .editable-text {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 10px;
+      padding: 5px;
+      border: 1px solid white;
+      border-radius: 5px;
+      color: black; /* Text color for better visibility */
+    }
+
+    .add-song-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+    }
+
+    /* Style for the view page */
+    .view-page {
+      background-color: black;
+      color: white;
+    }
+
+    .view-button,
+    .edit-view-button,
+    .close-button {
+      background-color: blue;
+      color: white;
+    }
+
+    @media only screen and (min-width: 600px) {
+      .song {
+        width: 48%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <!-- Header section with the title and description -->
+    <h1>JESUS HOUSE TORRY CHOIR</h1>
+    <p>Discover new songs every week.</p>
+  </header>
+
+  <section>
+    <!-- Landing page content section -->
+    <p>This is the content of your landing page.</p>
+    <p>Explore our collection of weekly songs by clicking the button below.</p>
+  </section>
+
+  <!-- Navigation buttons -->
+  <button onclick="window.location.href='#weekly-songs'">Weekly Songs</button>
+  <button class="add-song-button" onclick="addSong()">Add Song</button>
+
+  <section id="weekly-songs">
+    <!-- Weekly Songs section -->
+    <h2>Weekly Songs</h2>
+    <div id="gallery">
+      <!-- Gallery container for displaying songs -->
+      <!-- Sample songs -->
+      <div class="song editable" onclick="editLyrics(this)">
+        <!-- Song entry with edit functionality -->
+        <h3>Song list for Week 1</h3>
+        <textarea class="editable-text" disabled>Lyrics for Week 1...</textarea>
+        <button onclick="saveSong(this)">Save</button>
+        <button onclick="viewSong(this)">View Song</button>
+      </div>
+
+      <div class="song editable" onclick="editLyrics(this)">
+        <!-- Another song entry with edit functionality -->
+        <h3>Song list for Week 2</h3>
+        <textarea class="editable-text" disabled>Lyrics for Week 2...</textarea>
+        <button onclick="saveSong(this)">Save</button>
+        <button onclick="viewSong(this)">View Song</button>
+      </div>
+
+      <!-- Add more editable song entries as needed -->
+
+    </div>
+  </section>
+
+  <script>
+    function editLyrics(songElement) {
+      // Function to enable editing of lyrics
+      const textarea = songElement.querySelector('textarea');
+      textarea.disabled = false;
+      textarea.focus();
+    }
+
+    function saveSong(buttonElement) {
+      // Function to save edited song
+      const songElement = buttonElement.parentElement;
+      const textarea = songElement.querySelector('textarea');
+      textarea.disabled = true;
+      // Save to localStorage or a server database
+      // For this example, let's save to localStorage
+      const title = songElement.querySelector('h3');
+      const weekNumber = title.innerText.match(/\d+/)[0]; // Extract the week number
+      localStorage.setItem(`week${weekNumber}`, textarea.value);
+    }
+
+    function viewSong(buttonElement) {
+      // Function to view a song
+      const songElement = buttonElement.parentElement;
+      const title = songElement.querySelector('h3');
+      const weekNumber = title.innerText.match(/\d+/)[0]; // Extract the week number
+      const lyrics = localStorage.getItem(`week${weekNumber}`);
+      const formattedLyrics = lyrics.replace(/\n/g, '<br>');
+
+      // Use regular expression to make HTTP-type links clickable
+      const clickableLyrics = formattedLyrics.replace(/(http[s]?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write('<html><head><title>Edit Song</title></head><body class="view-page">');
+      newWindow.document.write(`<h2>${title.innerText}</h2>`);
+      newWindow.document.write(`<ul>${clickableLyrics.split('<br>').map(line => `<li>${line}</li>`).join('')}</ul>`);
+      newWindow.document.write('<button class="view-button" onclick="editView()">Edit</button>');
+      newWindow.document.write('<button class="close-button" onclick="closeView()">Close</button>');
+      newWindow.document.write('</body></html>');
+      newWindow.document.close();
+    }
+
+    function editView() {
+      // Function to enable editing of the viewed song
+      const newWindow = window.open('', '_blank');
+      const title = newWindow.document.querySelector('h2');
+      const lyrics = newWindow.document.querySelector('ul');
+      // Make lyrics editable
+      lyrics.contentEditable = true;
+      // Focus on lyrics for better user experience
+      lyrics.focus();
+      newWindow.document.write('<button class="edit-view-button" onclick="saveEditedView()">Save Changes</button>');
+      newWindow.document.write('<button class="close-button" onclick="closeView()">Close</button>');
+      newWindow.document.write('</body></html>');
+      newWindow.document.close();
+    }
+
+    function saveEditedView() {
+      // Function to save the edited viewed song
+      const newWindow = window.open('', '_blank');
+      const title = newWindow.document.querySelector('h2');
+      const editedLyrics = newWindow.document.querySelector('ul').innerHTML;
+      // Save edited song to localStorage or a server database
+      // For this example, let's display the edited content
+      alert(`Title: ${title.innerText}\nEdited Lyrics:\n${editedLyrics}`);
+      newWindow.close();
+    }
+
+    function closeView() {
+      // Function to close the viewed song and return to the weekly songs page
+      window.location.href = '#weekly-songs';
+    }
+
+    function addSong() {
+      // Function to add a new song entry
+      const gallery = document.getElementById('gallery');
+      const newSong = document.createElement('div');
+      newSong.className = 'song editable';
+      newSong.innerHTML = `
+        <h3>Song Title</h3>
+        <textarea class="editable-text" disabled>Lyrics for New Song...</textarea>
+        <button onclick="saveSong(this)">Save</button>
+        <button onclick="viewSong(this)">View Song</button>
+      `;
+      gallery.appendChild(newSong);
+    }
+
+    // Load saved songs on page load
+    window.onload = function () {
+      const songElements = document.querySelectorAll('.editable');
+      songElements.forEach((songElement) => {
+        const textarea = songElement.querySelector('textarea');
+        const weekNumber = songElement.querySelector('h3').innerText.match(/\d+/)[0]; // Extract the week number
+        const savedLyrics = localStorage.getItem(`week${weekNumber}`);
+        if (savedLyrics) {
+          textarea.value = savedLyrics;
+        }
+      });
+    };
+  </script>
+</body>
+
+</html>
